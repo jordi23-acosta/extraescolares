@@ -5,14 +5,16 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc } from 'firebase/firestore'
 import { auth, db } from '../../firebase'
 import { Mail, Lock, UserPlus, LogIn } from 'lucide-react'
 import logo from '/logo_TecMisantla-BzNub4Q9.png'
+import { useAuth } from '../../context/AuthContext'
 
 type Tab = 'login' | 'register'
 
 export default function LoginPage() {
+  const { currentUser, userProfile } = useAuth()
   const [tab, setTab] = useState<Tab>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,29 +24,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
+  // If already logged in, redirect immediately
+  if (currentUser && userProfile) {
+    if (userProfile.role === 'admin') navigate('/admin', { replace: true })
+    else if (userProfile.role === 'instructor') navigate('/instructor', { replace: true })
+    else if (userProfile.registroCompleto) navigate('/panel', { replace: true })
+    else navigate('/completar-registro', { replace: true })
+    return null
+  }
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password)
-      const profileDoc = await getDoc(doc(db, 'usuarios', cred.user.uid))
-      if (profileDoc.exists()) {
-        const profile = profileDoc.data()
-        if (profile.role === 'admin') {
-          navigate('/admin')
-        } else if (profile.role === 'instructor') {
-          navigate('/instructor')
-        } else {
-          if (!profile.registroCompleto) {
-            navigate('/completar-registro')
-          } else {
-            navigate('/panel')
-          }
-        }
-      } else {
-        navigate('/completar-registro')
-      }
+      await signInWithEmailAndPassword(auth, email, password)
+      // The AuthContext will detect the login via onAuthStateChanged,
+      // fetch the profile, and then RootRedirect will route to the correct panel.
+      navigate('/')
     } catch {
       setError('Correo o contraseña incorrectos.')
     } finally {
