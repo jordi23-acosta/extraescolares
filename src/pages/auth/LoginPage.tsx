@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -24,13 +24,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // If already logged in, redirect immediately
+  // If already logged in, redirect using Navigate component
   if (currentUser && userProfile) {
-    if (userProfile.role === 'admin') navigate('/admin', { replace: true })
-    else if (userProfile.role === 'instructor') navigate('/instructor', { replace: true })
-    else if (userProfile.registroCompleto) navigate('/panel', { replace: true })
-    else navigate('/completar-registro', { replace: true })
-    return null
+    if (userProfile.role === 'admin') return <Navigate to="/admin" replace />
+    if (userProfile.role === 'instructor') return <Navigate to="/instructor" replace />
+    if (userProfile.registroCompleto) return <Navigate to="/panel" replace />
+    return <Navigate to="/completar-registro" replace />
   }
 
   async function handleLogin(e: React.FormEvent) {
