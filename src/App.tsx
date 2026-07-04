@@ -40,14 +40,20 @@ function ProtectedRoute({
   children: JSX.Element
   allowedRoles: string[]
 }) {
-  const { currentUser, userProfile } = useAuth()
+  const { currentUser, userProfile, loading } = useAuth()
+
+  // Still loading auth state — show nothing (avoids redirect flash)
+  if (loading) return <LoadingScreen />
+
   if (!currentUser || !userProfile) return <Navigate to="/login" replace />
   if (!allowedRoles.includes(userProfile.role)) return <Navigate to="/" replace />
   return children
 }
 
 function RootRedirect() {
-  const { currentUser, userProfile } = useAuth()
+  const { currentUser, userProfile, loading } = useAuth()
+
+  if (loading) return <LoadingScreen />
   if (!currentUser || !userProfile) return <Navigate to="/login" replace />
 
   if (userProfile.role === 'admin')       return <Navigate to="/admin"      replace />
@@ -57,6 +63,17 @@ function RootRedirect() {
     return <Navigate to="/panel" replace />
   }
   return <Navigate to="/login" replace />
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm text-gray-500">Cargando...</p>
+      </div>
+    </div>
+  )
 }
 
 // ── Routes ───────────────────────────────────────────────────────────────────

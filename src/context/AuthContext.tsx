@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { User, onAuthStateChanged } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -27,20 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  async function fetchProfile(user: User) {
+  const fetchProfile = useCallback(async (user: User) => {
     try {
       const docRef = doc(db, 'usuarios', user.uid)
       const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
         setUserProfile({ uid: user.uid, ...docSnap.data() } as UserProfile)
       } else {
-        setUserProfile(null)
+        // User exists in Auth but not in Firestore — treat as new student
+        setUserProfile({
+          uid: user.uid,
+          email: user.email || '',
+          role: 'estudiante',
+          registroCompleto: false,
+        } as UserProfile)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
       setUserProfile(null)
     }
-  }
+  }, [])
 
   async function refreshProfile() {
     if (currentUser) {
@@ -50,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true)
       setCurrentUser(user)
       if (user) {
         await fetchProfile(user)
@@ -59,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
     return unsubscribe
-  }, [])
+  }, [fetchProfile])
 
   const value: AuthContextType = {
     currentUser,
@@ -70,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
