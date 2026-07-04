@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isInstructor() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'instructor';
+    }
+    
+    function isAdminOrInstructor() {
+      return isAdmin() || isInstructor();
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'estudiante';
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Usuarios collection
+    match /usuarios/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdminOrInstructor());
+      allow delete: if isAdmin();
+    }
+    
+    // Alumnos collection
+    match /alumnos/{alumnoId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrInstructor();
+    }
+    
+    // Instructores collection
+    match /instructores/{instructorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Actividades collection
+    match /actividades/{actividadId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrInstructor();
+    }
+    
+    // Inscripciones collection
+    match /inscripciones/{inscripcionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdminOrInstructor();
+    }
+    
+    // Asistencias collection
+    match /asistencias/{asistenciaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrInstructor();
+    }
+    
+    // Papelera collection
+    match /papelera/{itemId} {
+      allow read, write: if isAdminOrInstructor();
+    }
+  }
+}
