@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
-// TODO: Reemplaza con tu configuración de Firebase
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCe1MxKwQMIrvcugsGo3JDCW9se6Wz5bdI",
+  authDomain: "extraescolares-tec-misantla.firebaseapp.com",
+  projectId: "extraescolares-tec-misantla",
+  storageBucket: "extraescolares-tec-misantla.firebasestorage.app",
+  messagingSenderId: "88211922494",
+  appId: "1:88211922494:web:e560b3f91f6e7ca4d5fb6f",
+  measurementId: "G-R2PHJE6TJJ"
 }
 
 const app = initializeApp(firebaseConfig)
