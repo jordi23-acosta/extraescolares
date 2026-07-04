@@ -42,10 +42,9 @@ function ProtectedRoute({
 }) {
   const { currentUser, userProfile, loading } = useAuth()
 
-  // Still loading auth state — show nothing (avoids redirect flash)
   if (loading) return <LoadingScreen />
-
-  if (!currentUser || !userProfile) return <Navigate to="/login" replace />
+  if (!currentUser) return <Navigate to="/login" replace />
+  if (!userProfile) return <Navigate to="/completar-registro" replace />
   if (!allowedRoles.includes(userProfile.role)) return <Navigate to="/" replace />
   return children
 }
@@ -54,7 +53,10 @@ function RootRedirect() {
   const { currentUser, userProfile, loading } = useAuth()
 
   if (loading) return <LoadingScreen />
-  if (!currentUser || !userProfile) return <Navigate to="/login" replace />
+  if (!currentUser) return <Navigate to="/login" replace />
+
+  // User authenticated but no Firestore profile yet → new student
+  if (!userProfile) return <Navigate to="/completar-registro" replace />
 
   if (userProfile.role === 'admin')       return <Navigate to="/admin"      replace />
   if (userProfile.role === 'instructor')  return <Navigate to="/instructor" replace />

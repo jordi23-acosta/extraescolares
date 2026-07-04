@@ -24,8 +24,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // If already logged in, redirect using Navigate component
-  if (currentUser && userProfile) {
+  // If already logged in with a valid profile, redirect
+  if (currentUser && userProfile && userProfile.role) {
     if (userProfile.role === 'admin') return <Navigate to="/admin" replace />
     if (userProfile.role === 'instructor') return <Navigate to="/instructor" replace />
     if (userProfile.registroCompleto) return <Navigate to="/panel" replace />

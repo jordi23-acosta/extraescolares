@@ -34,13 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setUserProfile({ uid: user.uid, ...docSnap.data() } as UserProfile)
       } else {
-        // User exists in Auth but not in Firestore — treat as new student
-        setUserProfile({
-          uid: user.uid,
-          email: user.email || '',
-          role: 'estudiante',
-          registroCompleto: false,
-        } as UserProfile)
+        // No profile document yet — set null, will redirect to complete registration
+        setUserProfile(null)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
