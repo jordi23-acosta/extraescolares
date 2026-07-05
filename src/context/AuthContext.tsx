@@ -30,15 +30,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (user: User) => {
     try {
       const docRef = doc(db, 'usuarios', user.uid)
+      console.log('[AUTH] Reading Firestore doc: usuarios/' + user.uid)
       const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
-        setUserProfile({ uid: user.uid, ...docSnap.data() } as UserProfile)
+        const profile = { uid: user.uid, ...docSnap.data() } as UserProfile
+        console.log('[AUTH] Profile found:', profile.role)
+        setUserProfile(profile)
       } else {
-        // No profile document yet — set null, will redirect to complete registration
+        console.log('[AUTH] No profile document found')
         setUserProfile(null)
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      console.error('[AUTH] Error fetching profile:', error)
       setUserProfile(null)
     }
   }, [])
@@ -51,14 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('[AUTH] onAuthStateChanged:', user?.email ?? 'null')
       setLoading(true)
       setCurrentUser(user)
       if (user) {
+        console.log('[AUTH] Fetching profile for UID:', user.uid)
         await fetchProfile(user)
+        console.log('[AUTH] Profile loaded')
       } else {
         setUserProfile(null)
       }
       setLoading(false)
+      console.log('[AUTH] loading = false')
     })
     return unsubscribe
   }, [fetchProfile])

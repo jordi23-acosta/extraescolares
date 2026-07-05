@@ -38,18 +38,16 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      // Don't navigate — the <Navigate> at the top of this component
-      // will automatically redirect once AuthContext updates userProfile.
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string }
-      if (firebaseErr.code === 'auth/invalid-credential' || firebaseErr.code === 'auth/wrong-password') {
+      if (firebaseErr.code === 'auth/network-request-failed') {
+        setError('Error de red: algo en tu computadora bloquea Firebase. Prueba en otro navegador (Firefox), en modo incógnito, o desactiva antivirus/proxy.')
+      } else if (firebaseErr.code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos.')
-      } else if (firebaseErr.code === 'auth/user-not-found') {
-        setError('No existe una cuenta con este correo.')
       } else if (firebaseErr.code === 'auth/too-many-requests') {
         setError('Demasiados intentos. Intenta más tarde.')
       } else {
-        setError('Error al iniciar sesión. Intenta de nuevo.')
+        setError(`Error: ${firebaseErr.code || 'Error desconocido'}`)
       }
       setLoading(false)
     }
